@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+"""i3-cheatsheet entry point."""
+
+import argparse
+from pathlib import Path
+
+from cache import CacheManager
+from rofi import show
+
+
+def main():
+    cli = argparse.ArgumentParser(
+        description="Search your i3 keyboard shortcuts."
+    )
+
+    cli.add_argument(
+        "--config",
+        default="~/.config/i3/config",
+        help="Path to i3 configuration",
+    )
+
+    cli.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Force cache rebuild",
+    )
+
+    cli.add_argument(
+        "--list",
+        action="store_true",
+        help="Print cached shortcuts as JSON",
+    )
+
+    args = cli.parse_args()
+
+    manager = CacheManager(args.config)
+    
+    if args.refresh:
+        manager._rebuild()
+
+    result = manager.load()
+
+    if args.list:
+        import json
+        print(json.dumps(result, indent=2))
+        return
+
+    show(result["bindings"])
+
+
+if __name__ == "__main__":
+    main()
+
